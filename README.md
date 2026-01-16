@@ -1,12 +1,35 @@
 # n8n OpenCode Skills Repository
 
-## This is opencode generated skills from claudecode n8n skills
+## Overview
 
-Claude [n8n-skills](https://github.com/czlonkowski/n8n-skills)
+This repository contains OpenCode skills generated from Claude's n8n-skills collection. These skills extend OpenCode's capabilities by providing specialized tools for working with n8n workflows and MCP (Model Context Protocol) tools.
 
-[n8n-mcp](https://github.com/czlonkowski/n8n-mcp) Use this link to setup n8n-mcp
+The skills in this repository are designed to work with [OpenCode](https://opencode.ai) - the AI-powered terminal coding assistant - enabling AI to leverage domain-specific knowledge for building and managing n8n workflows.
+
+## Repository Structure
+
+- **n8n-skills**: Original collection of n8n skills by Claude (https://github.com/czlonkowski/n8n-skills)
+- **n8n-mcp**: MCP server implementation that powers the advanced workflow tools (https://github.com/czlonkowski/n8n-mcp)
 
 A collection of reusable skills for [OpenCode](https://opencode.ai) - the AI-powered terminal coding assistant. Skills extend OpenCode's capabilities by providing domain-specific tools and workflows that the AI can leverage to accomplish tasks.
+
+## 🚨 Important: Container Configuration Fix
+
+**Issue**: The n8n-mcp container configured with MCP_MODE=stdio immediately exits after starting with the message "stdin closed, shutting down...".
+
+**Solution**: This repository now includes a fixed docker-compose.yml file that addresses this issue by:
+1. Adding `stdin_open: true` to keep stdin open
+2. Adding `tty: true` to allocate a pseudo-TTY
+
+This prevents the container from exiting immediately and allows proper testing of all n8n-mcp skills (n8n-mcp-tools-expert, n8n-validation-expert, n8n-workflow-patterns, and n8n-node-configuration).
+
+**✨ Quick Start**: With this fix, you can now quickly get started with local n8n and MCP development using:
+```bash
+# Use the updated docker-compose.yml in this repository
+docker-compose up
+```
+
+This docker-compose setup provides a **fast way to start working with both n8n and the MCP tools locally**, enabling you to test all the skills in this repository without encountering the container exit issue.
 
 ## What are n8n Skills?
 
