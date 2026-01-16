@@ -1,4 +1,10 @@
-# n8n Skills Repository
+# n8n OpenCode Skills Repository
+
+## This is opencode generated skills from claudecode n8n skills
+
+Claude [n8n-skills](https://github.com/czlonkowski/n8n-skills)
+
+[n8n-mcp](https://github.com/czlonkowski/n8n-mcp) Use this link to setup n8n-mcp
 
 A collection of reusable skills for [OpenCode](https://opencode.ai) - the AI-powered terminal coding assistant. Skills extend OpenCode's capabilities by providing domain-specific tools and workflows that the AI can leverage to accomplish tasks.
 
