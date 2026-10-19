@@ -1,0 +1,22 @@
+{
+  "id": "self-hosting-004",
+  "skills": ["n8n-self-hosting"],
+  "query": "My self-hosted n8n (queue mode, Postgres) has been running for a few months. How do I back it up properly and update it to the latest version safely?",
+  "expected_behavior": [
+    "Activate n8n-self-hosting (Day-2 operations)",
+    "Backup: explain the two things that only matter together — the N8N_ENCRYPTION_KEY (from .env / ~/.n8n/config) stored OFF the box, AND the data (pg_dump of the Postgres DB, plus the n8n_storage volume if using filesystem binary mode)",
+    "State clearly that a DB backup without the matching encryption key is undecryptable",
+    "Provide the pg_dump command and the volume tar approach, and recommend scheduling + copying artifacts off-box + testing a restore",
+    "Update: recommend pinning N8N_IMAGE_TAG and bumping deliberately, then docker compose pull && docker compose up -d; in queue mode main and workers must move to the SAME version together",
+    "Advise backing up BEFORE a major upgrade and reviewing release/breaking-change notes (n8n auto-runs DB migrations on boot)",
+    "Mention rollback = set N8N_IMAGE_TAG back and pull/up again"
+  ],
+  "expected_content": [
+    "encryption key",
+    "pg_dump",
+    "docker compose pull",
+    "N8N_IMAGE_TAG"
+  ],
+  "priority": "medium",
+  "notes": "Day-2: the encryption key is the load-bearing backup artifact; DB-only backups are useless without it. Update keeps main+workers on one version and backs up before major bumps."
+}

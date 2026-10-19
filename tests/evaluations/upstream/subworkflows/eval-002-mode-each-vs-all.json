@@ -1,0 +1,24 @@
+{
+  "id": "subworkflows-002",
+  "skills": ["n8n-subworkflows"],
+  "query": "I have a sub-workflow called 'Customer: build monthly summary' that groups a customer's orders and emits one summary row. The main workflow pulls orders for 50 customers and calls it with an Execute Workflow node. But instead of 50 summaries I get ONE summary that blends all 50 customers' orders together. The body has a grouping node that's clearly seeing everything at once. How do I make it run per customer?",
+  "expected_behavior": [
+    "Activate n8n-subworkflows skill",
+    "Diagnose the cause: the Execute Workflow node is using mode 'all' (the default), so the sub-workflow runs once with all 50 customers' items and the grouping/aggregation node sees everyone at once",
+    "Explain mode: all (one run, all N items) vs mode: each (N runs, one item each)",
+    "Explain that the split matters precisely because this body assumes it sees exactly one item (per-run aggregation), so mode: each is what matches that assumption — one run per customer, one summary each",
+    "Set mode: 'each' on the caller's Execute Workflow node via n8n_update_partial_workflow",
+    "Recommend mode: each OVER adding a Loop Over Items node inside the sub-workflow, so the body stays single-item and simple",
+    "Optionally note waitForSubWorkflow stays true here since the caller needs the summaries back",
+    "Reference SUBWORKFLOW_PATTERNS.md for the all-vs-each detail"
+  ],
+  "expected_content": [
+    "mode",
+    "each",
+    "all",
+    "per-item",
+    "Loop Over Items"
+  ],
+  "priority": "high",
+  "notes": "Classic all-vs-each trap. Body assumes one item (aggregation), default mode: all feeds it all 50 at once. Fix is mode: each on the caller, and the skill should steer away from an internal Loop Over Items node."
+}

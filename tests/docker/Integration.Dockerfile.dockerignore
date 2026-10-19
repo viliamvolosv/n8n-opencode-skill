@@ -1,0 +1,9 @@
+**
+!skills/
+!skills/**
+!tests/
+!tests/docker/
+!tests/docker/*.mjs
+!upstream.json
+!tests/docker/Integration.Dockerfile
+!tests/docker/Integration.Dockerfile.dockerignore

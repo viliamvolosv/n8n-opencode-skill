@@ -1,0 +1,11 @@
+{
+  "id": "router-001",
+  "skills": ["using-n8n-mcp-skills", "n8n-expression-syntax"],
+  "query": "I need an n8n webhook that reads email from an incoming JSON POST and sends that email in a JSON response. Which guidance should we consult before building it, and how should the fields be referenced?",
+  "expected_behavior": [
+    "Loads the using-n8n-mcp-skills router through OpenCode V2's native skill tool",
+    "Routes expression and webhook data mapping to n8n-expression-syntax and loads that skill",
+    "Explains that Webhook request fields are under $json.body",
+    "Uses the live MCP schema rather than assuming a remembered node configuration"
+  ]
+}

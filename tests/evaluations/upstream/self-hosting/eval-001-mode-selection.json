@@ -1,0 +1,22 @@
+{
+  "id": "self-hosting-001",
+  "skills": ["n8n-self-hosting"],
+  "query": "I just spun up a fresh Ubuntu box on Hetzner and pointed n8n.mycompany.com at it. Can you deploy n8n on it for me?",
+  "expected_behavior": [
+    "Activate n8n-self-hosting skill",
+    "Ask the user which mode they want BEFORE deploying: single/regular vs queue mode (per Rule 0), with a short decision guide (single = simplest, queue = workers/scale)",
+    "Collect the remaining inputs: SSH target, the TLS email, and timezone (domain n8n.mycompany.com already given → SUBDOMAIN=n8n, DOMAIN_NAME=mycompany.com)",
+    "Plan the preflight: confirm the domain's public DNS A record resolves to the box's public IP, and that ports 80/443 are open (host firewall AND Hetzner Cloud firewall), because Caddy's ACME challenge fails otherwise",
+    "Outline the end-to-end flow: install Docker, lay down the project from the assets templates, generate fresh secrets on the box, docker compose up -d, verify cert + https://.../healthz",
+    "Not invent a mode or silently default without asking"
+  ],
+  "expected_content": [
+    "single",
+    "queue",
+    "DNS",
+    "docker compose",
+    "Caddy"
+  ],
+  "priority": "high",
+  "notes": "Rule 0: the skill must make the agent ASK single vs queue first. Also tests the DNS/ports preflight awareness (the #1 cause of a failed cert)."
+}

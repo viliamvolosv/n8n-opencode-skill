@@ -1,0 +1,26 @@
+{
+  "id": "code-python-001",
+  "skill": "n8n-code-python",
+  "name": "Import Rejected - requests Is Not Available",
+  "description": "Tests that the agent knows imports are checked against an allowlist before the code runs, that requests is never available, and routes HTTP to the HTTP Request node",
+  "query": "I'm writing a Python Code node to fetch data from an API. Here's my code:\n\n```python\nimport requests\n\nurl = \"https://api.example.com/users\"\nresponse = requests.get(url)\ndata = response.json()\n\nreturn [{\"json\": data}]\n```\n\nThe node fails with \"Security violations detected\". What's wrong?",
+  "expected_behavior": [
+    "Explain that native Python Code nodes reject imports before execution unless the module is allowlisted on the instance",
+    "State that requests (third-party) is not available; n8n Cloud allows no imports at all",
+    "Recommend the HTTP Request node before the Code node (or JavaScript with this.helpers.httpRequest)",
+    "Show the Python node processing the HTTP Request node's output via _items",
+    "Not suggest pip install or urllib as a workaround"
+  ],
+  "expected_output_includes": [
+    "Security violations detected",
+    "allowlist",
+    "HTTP Request node",
+    "_items"
+  ],
+  "should_not_include": [
+    "pip install",
+    "install requests",
+    "requirements.txt",
+    "import urllib"
+  ]
+}

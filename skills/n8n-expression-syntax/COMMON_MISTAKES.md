@@ -1,0 +1,446 @@
+# Common n8n Expression Mistakes
+
+Complete catalog of expression errors with explanations and fixes.
+
+---
+
+## 1. Missing Curly Braces
+
+**Problem**: Expression not recognized, shows as literal text
+
+❌ **Wrong**:
+```
+$json.email
+```
+
+✅ **Correct**:
+```
+{{$json.email}}
+```
+
+**Why it fails**: n8n treats text without {{ }} as a literal string. Expressions must be wrapped to be evaluated.
+
+**How to identify**: Field shows exact text like "$json.email" instead of actual value.
+
+---
+
+## 2. Webhook Body Access
+
+**Problem**: Undefined values when accessing webhook data
+
+❌ **Wrong**:
+```
+{{$json.name}}
+{{$json.email}}
+{{$json.message}}
+```
+
+✅ **Correct**:
+```
+{{$json.body.name}}
+{{$json.body.email}}
+{{$json.body.message}}
+```
+
+**Why it fails**: Webhook node wraps incoming data under `.body` property. The root `$json` contains headers, params, query, and body.
+
+**Webhook structure**:
+```javascript
+{
+  "headers": {...},
+  "params": {...},
+  "query": {...},
+  "body": {         // User data is HERE!
+    "name": "John",
+    "email": "john@example.com"
+  }
+}
+```
+
+**How to identify**: Webhook workflow shows "undefined" for fields that are definitely being sent.
+
+---
+
+## 3. Spaces in Field Names
+
+**Problem**: Syntax error or undefined value
+
+❌ **Wrong**:
+```
+{{$json.first name}}
+{{$json.user data.email}}
+```
+
+✅ **Correct**:
+```
+{{$json['first name']}}
+{{$json['user data'].email}}
+```
+
+**Why it fails**: Spaces break dot notation. JavaScript interprets space as end of property name.
+
+**How to identify**: Error message about unexpected token, or undefined when field exists.
+
+---
+
+## 4. Spaces in Node Names
+
+**Problem**: Cannot access other node's data
+
+❌ **Wrong**:
+```
+{{$node.HTTP Request.json.data}}
+{{$node.Respond to Webhook.json}}
+```
+
+✅ **Correct**:
+```
+{{$node["HTTP Request"].json.data}}
+{{$node["Respond to Webhook"].json}}
+```
+
+**Why it fails**: Node names are treated as object property names and need quotes when they contain spaces.
+
+**How to identify**: Error like "Cannot read property 'Request' of undefined"
+
+---
+
+## 5. Incorrect Node Reference Case
+
+**Problem**: Undefined or wrong data returned
+
+❌ **Wrong**:
+```
+{{$node["http request"].json.data}}  // lowercase
+{{$node["Http Request"].json.data}}  // wrong capitalization
+```
+
+✅ **Correct**:
+```
+{{$node["HTTP Request"].json.data}}  // exact match
+```
+
+**Why it fails**: Node names are **case-sensitive**. Must match exactly as shown in workflow.
+
+**How to identify**: Undefined value even though node exists and has data.
+
+---
+
+## 6. Double Wrapping
+
+**Problem**: Literal {{ }} appears in output
+
+❌ **Wrong**:
+```
+{{{$json.field}}}
+```
+
+✅ **Correct**:
+```
+{{$json.field}}
+```
+
+**Why it fails**: Only one set of {{ }} is needed. Extra braces are treated as literal characters.
+
+**How to identify**: Output shows "{{value}}" instead of just "value".
+
+---
+
+## 7. Array Access with Dots
+
+**Problem**: Syntax error or undefined
+
+❌ **Wrong**:
+```
+{{$json.items.0.name}}
+{{$json.users.1.email}}
+```
+
+✅ **Correct**:
+```
+{{$json.items[0].name}}
+{{$json.users[1].email}}
+```
+
+**Why it fails**: Array indices require brackets, not dots. Number after dot is invalid JavaScript.
+
+**How to identify**: Syntax error or "Cannot read property '0' of undefined"
+
+---
+
+## 8. Using Expressions in Code Nodes
+
+**Problem**: Literal string instead of value, or errors
+
+❌ **Wrong (in Code node)**:
+```javascript
+const email = '{{$json.email}}';
+const name = '={{$json.body.name}}';
+```
+
+✅ **Correct (in Code node)**:
+```javascript
+const email = $json.email;
+const name = $json.body.name;
+
+// Or using Code node API
+const email = $input.item.json.email;
+const allItems = $input.all();
+```
+
+**Why it fails**: Code nodes have **direct access** to data. The {{ }} syntax is for expression fields in other nodes, not for JavaScript code.
+
+**How to identify**: Literal string "{{$json.email}}" appears in Code node output instead of actual value.
+
+---
+
+## 9. Missing Quotes in $node Reference
+
+**Problem**: Syntax error
+
+❌ **Wrong**:
+```
+{{$node[HTTP Request].json.data}}
+```
+
+✅ **Correct**:
+```
+{{$node["HTTP Request"].json.data}}
+```
+
+**Why it fails**: Node names must be quoted strings inside brackets.
+
+**How to identify**: Syntax error "Unexpected identifier"
+
+---
+
+## 10. Incorrect Property Path
+
+**Problem**: Undefined value
+
+❌ **Wrong**:
+```
+{{$json.data.items.name}}       // items is an array
+{{$json.user.email}}            // user doesn't exist, it's userData
+```
+
+✅ **Correct**:
+```
+{{$json.data.items[0].name}}    // access array element
+{{$json.userData.email}}        // correct property name
+```
+
+**Why it fails**: Wrong path to data. Arrays need index, property names must be exact.
+
+**How to identify**: Check actual data structure using expression editor preview.
+
+---
+
+## 11. Using = Prefix Outside JSON
+
+**Problem**: Literal "=" appears in output
+
+❌ **Wrong (in text field)**:
+```
+Email: ={{$json.email}}
+```
+
+✅ **Correct (in text field)**:
+```
+Email: {{$json.email}}
+```
+
+**Note**: The `=` prefix is **only** needed in JSON mode or when you want to set entire field value to expression result:
+
+```javascript
+// JSON mode (set property to expression)
+{
+  "email": "={{$json.body.email}}"
+}
+
+// Text mode (no = needed)
+Hello {{$json.body.name}}!
+```
+
+**Why it fails**: The `=` is parsed as literal text in non-JSON contexts.
+
+**How to identify**: Output shows "=john@example.com" instead of "john@example.com"
+
+---
+
+## 12. Expressions in Webhook Path
+
+**Problem**: Path doesn't update, validation error
+
+❌ **Wrong**:
+```
+path: "{{$json.user_id}}/webhook"
+path: "users/={{$env.TENANT_ID}}"
+```
+
+✅ **Correct**:
+```
+path: "my-webhook"              // Static paths only
+path: "user-webhook/:userId"    // Use dynamic URL parameters instead
+```
+
+**Why it fails**: Webhook paths must be static. Use dynamic URL parameters (`:paramName`) instead of expressions.
+
+**How to identify**: Webhook path doesn't change or validation warns about invalid path.
+
+---
+
+## 13. Forgetting .json in $node Reference
+
+**Problem**: Undefined or wrong data
+
+❌ **Wrong**:
+```
+{{$node["HTTP Request"].data}}          // Missing .json
+{{$node["Webhook"].body.email}}         // Missing .json
+```
+
+✅ **Correct**:
+```
+{{$node["HTTP Request"].json.data}}
+{{$node["Webhook"].json.body.email}}
+```
+
+**Why it fails**: Node data is always under `.json` property (or `.binary` for binary data).
+
+**How to identify**: Undefined value when you know the node has data.
+
+---
+
+## 14. Template Literals & Concatenation Outside `{{ }}`
+
+**Problem**: A backtick template literal or `+` concatenation shows up as literal text
+
+❌ **Wrong** (written as the whole field value, with no `{{ }}`):
+```
+`Hello ${$json.name}!`          // bare backticks — printed verbatim
+"Hello " + $json.name + "!"     // bare concatenation — printed verbatim
+```
+
+✅ **Correct** (any of these):
+```
+Hello {{$json.name}}!                   // adjacent text + {{ }} auto-concatenate
+{{ `Hello ${$json.name}!` }}            // a template literal INSIDE {{ }}
+{{ "Hello " + $json.name + "!" }}       // + concatenation INSIDE {{ }}
+```
+
+**Why it fails**: n8n only evaluates what's inside `{{ }}`; everything else is literal text. The backticks and `+` aren't the problem — the **missing `{{ }}`** is. **Inside** an expression, backtick template literals with `${...}` interpolation are fully supported modern JavaScript, so this is valid and evaluates:
+
+```
+={{ $json.items.map(i => `${i.name} — ${i.qty}`).join(', ') }}
+```
+
+The same holds for optional chaining (`{{ $json.user?.email }}`) and string-keyed bracket access (`{{ $json['some-prop'] }}`) — both are valid n8n expressions. As of n8n-mcp ≥ 2.63.0 the validator no longer flags template literals, optional chaining, or bracket access inside expressions (earlier versions raised false-positive errors on them).
+
+**How to identify**: Literal backticks or `+` symbols appear in output → the code wasn't wrapped in `{{ }}`.
+
+---
+
+## 15. Empty Expression Brackets
+
+**Problem**: Literal {{}} in output
+
+❌ **Wrong**:
+```
+{{}}
+{{ }}
+```
+
+✅ **Correct**:
+```
+{{$json.field}}                 // Include expression content
+```
+
+**Why it fails**: Empty expression brackets have nothing to evaluate.
+
+**How to identify**: Literal "{{ }}" text appears in output.
+
+---
+
+## 16. JMESPath String in Double Quotes
+
+**Problem**: `$jmespath` filter returns `[]` even though matching data exists — no error
+
+❌ **Wrong**:
+```
+{{ $jmespath($json, 'customers[?country=="PL"].name') }}      // → []
+```
+
+✅ **Correct**:
+```
+{{ $jmespath($json, "customers[?country=='PL'].name") }}      // → ["Acme", "Bar"]
+{{ $jmespath($json, "customers[?revenue > `100000`].name") }} // numbers in backticks
+```
+
+**Why it fails**: in JMESPath, `"PL"` is a quoted **field name**, not a string. The filter compares `country` to a field called `PL`, which doesn't exist, so nothing matches. String literals use single quotes; numbers and booleans use backticks. A bare number (`revenue > 100000`) or `and`/`=` instead of `&&`/`==` is a parse error, and the whole expression becomes `null` (see #17).
+
+**Same trap over items**: `$jmespath($('Node').all(), "[?country=='PL']")` also returns `[]`. Items are `{json: …}` wrappers, so write `[?json.country=='PL'].json.name`, or map first: `$input.all().map(i => i.json)`.
+
+**How to identify**: `[]` or `null` from a query whose data you can see in the input panel.
+
+---
+
+## 17. Runtime Error Hidden as `null`
+
+**Problem**: A field comes out `null`/empty (or a Filter drops every item) while the node and execution show success
+
+❌ **Wrong assumption**: "It ran green, so the expression works."
+
+**Why it happens**: verified on n8n 2.38 with the default expression runtime: at runtime n8n swallows JavaScript errors inside `{{ }}` other than its own `ExpressionError`s. `$json.missing.field`, `JSON.parse` on bad input, a thrown `Error` and a JMESPath syntax error all resolved to `null` instead of failing the node. The editor preview shows the error; the execution doesn't. Other versions or engines may fail the node instead. Either way, never trust a green run on its own.
+
+✅ **Fix / check**:
+```
+{{ (() => { try { return JSON.stringify($json.payload.items.map(i => i.id)) } catch (e) { return 'ERROR: ' + e.message } })() }}
+```
+Wrap temporarily to see the message, fix the path, then remove the wrapper. Always inspect output values after a test run, and guard optional paths with `?.` / `??`.
+
+**How to identify**: unexpected `null`s in output; Filter/IF sending everything to the false side.
+
+---
+
+## Quick Reference Table
+
+| Error | Symptom | Fix |
+|-------|---------|-----|
+| No {{ }} | Literal text | Add {{ }} |
+| Webhook data | Undefined | Add `.body` |
+| Space in field | Syntax error | Use `['field name']` |
+| Space in node | Undefined | Use `["Node Name"]` |
+| Wrong case | Undefined | Match exact case |
+| Double {{ }} | Literal braces | Remove extra {{ }} |
+| .0 array | Syntax error | Use [0] |
+| {{ }} in Code | Literal string | Remove {{ }} |
+| No quotes in $node | Syntax error | Add quotes |
+| Wrong path | Undefined | Check data structure |
+| = in text | Literal = | Remove = prefix |
+| Dynamic path | Doesn't work | Use static path |
+| Missing .json | Undefined | Add .json |
+| Template literal / `+` outside {{ }} | Literal text | Wrap in {{ }} (both work inside) |
+| Empty {{ }} | Literal braces | Add expression |
+| JMESPath `"PL"` in a filter | `[]`, no error | `'PL'` for strings, `` `100` `` for numbers |
+| JMESPath over `.all()` without `json.` | `[]` | `[?json.field=='x'].json.name` |
+| Any JS error inside {{ }} at runtime | `null`, node still succeeds | Check preview + output values; try/catch wrapper to see the message |
+
+---
+
+## Debugging Process
+
+When expression doesn't work:
+
+1. **Check braces**: Is it wrapped in {{ }}?
+2. **Check data source**: Is it webhook data? Add `.body`
+3. **Check spaces**: Field or node name has spaces? Use brackets
+4. **Check case**: Does node name match exactly?
+5. **Check path**: Is the property path correct?
+6. **Use expression editor**: Preview shows actual result
+   - At runtime errors become `null` silently. If output is `null`, the preview's error is the real cause.
+7. **Check context**: Is it a Code node? Remove {{ }}
+
+---
+
+**Related**: See [EXAMPLES.md](EXAMPLES.md) for working examples of correct syntax.

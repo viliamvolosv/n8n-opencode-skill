@@ -1,0 +1,30 @@
+NOTICES — n8n OpenCode V2 Skills
+
+This OpenCode V2 adaptation includes skill text, references and assets from:
+
+  czlonkowski/n8n-skills
+  https://github.com/czlonkowski/n8n-skills
+  Copyright (c) Romuald Członkowski (AiAdvisors)
+  Licensed under the MIT License; see UPSTREAM-LICENSE.
+
+OpenCode-specific modifications include skill invocation and routing guidance,
+configuration examples, installation documentation and maintenance scripts.
+The source revision is recorded in upstream.json. This project is licensed
+under MIT; see LICENSE.
+
+Upstream's attribution states that the document structure of
+skills/using-n8n-mcp-skills borrows from the using-n8n-skills meta-skill in:
+
+  n8n-io/skills
+  https://github.com/n8n-io/skills
+  Copyright n8n GmbH and contributors
+  Licensed under the Apache License, Version 2.0.
+
+Upstream describes the router's prose as original to czlonkowski/n8n-skills.
+This notice retains that provenance statement. A copy of Apache License 2.0
+is retained in NOTICES-APACHE-2.0.txt alongside it; this does not change this
+project's MIT license or assert that every skill is Apache-licensed.
+
+Claude Code plugin manifests and hook implementations are not included in
+this distribution. Their upstream file listings and implementation notes
+have therefore been omitted from this notice.

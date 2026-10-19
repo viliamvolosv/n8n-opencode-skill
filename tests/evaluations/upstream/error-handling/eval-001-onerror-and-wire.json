@@ -1,0 +1,25 @@
+{
+  "id": "error-handling-001",
+  "skills": ["n8n-error-handling"],
+  "query": "I want my HTTP Request node's failures to go to a Slack alert instead of killing the workflow. I added the Slack node and connected the HTTP Request node to it, but on a real failure the workflow still just halts and Slack never fires. I read somewhere about an onError setting — do I need that too, or is the connection enough?",
+  "expected_behavior": [
+    "Activate n8n-error-handling skill",
+    "Explain that routing a node's failure is a TWO-step setup and that the connection alone is not enough",
+    "Identify the missing step: onError must be set to continueErrorOutput on the HTTP Request node, which is what creates the error output",
+    "Explain that without onError set, the second output (main[1]) does not exist, so the wire never fires and the workflow halts on the default stopWorkflow behavior",
+    "Confirm the connection must target the error output specifically (sourceIndex 1 / main[1]), not the normal output",
+    "Show the n8n_update_partial_workflow operations: an updateNode (or patchNodeField) to set onError, and an addConnection targeting sourceIndex 1",
+    "List the valid onError values (stopWorkflow, continueErrorOutput, continueRegularOutput)",
+    "Recommend verifying with n8n_get_workflow that BOTH onError is continueErrorOutput AND connections.<node>.main[1] points at the Slack node",
+    "Mention that a half-wired error output validates clean, so validate_workflow will not flag it"
+  ],
+  "expected_content": [
+    "continueErrorOutput",
+    "main[1]",
+    "sourceIndex",
+    "addConnection",
+    "n8n_get_workflow"
+  ],
+  "priority": "high",
+  "notes": "The #1 silent trap: per-node error output needs BOTH onError AND the wired error output. Here the user wired the connection but never set onError, so the slot never fires and the workflow halts. The skill must name both steps, show the addConnection at sourceIndex 1, and stress n8n_get_workflow verification because validation won't catch it."
+}
