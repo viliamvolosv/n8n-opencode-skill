@@ -1,0 +1,27 @@
+{
+  "id": "error-handling-003",
+  "skills": ["n8n-error-handling"],
+  "query": "I have a scheduled n8n workflow that runs every hour and pulls data from a third-party API that's a bit flaky — every few days it 429s or times out, the run fails, and nobody finds out until someone notices the downstream data is stale. There's no webhook and no Respond node here, it just runs on a cron. How do I make this resilient and actually get alerted when it genuinely breaks?",
+  "expected_behavior": [
+    "Activate n8n-error-handling skill",
+    "Recognize this is an unattended/scheduled workflow, not an API workflow, so the posture is retry + a workflow-level error workflow (not Respond-to-Webhook handling)",
+    "Recommend self-healing first: set retryOnFail with maxTries and waitBetweenTries on the API-calling node so transient 429s and timeouts retry before being treated as a failure",
+    "Note the engine limits: maxTries caps at 5 and waitBetweenTries caps at 5000ms, and retry fires on any error",
+    "Show the n8n_update_partial_workflow updateNode op enabling retryOnFail/maxTries/waitBetweenTries",
+    "Recommend a workflow-level error workflow built around an Error Trigger node (capture the failure, then notify via Slack/email), since there is no Respond node to carry an error",
+    "Describe a minimal Error Trigger workflow and what to put in the alert (workflow name, failed node, real error message, links to editor and execution)",
+    "Honestly state the caveat: assigning the error workflow (Workflow Settings -> Error Workflow, or the instance default) is a UI-only setting that the community MCP cannot set, so the agent should build the workflow and tell the user the exact UI step",
+    "Warn about the recursion trap: the notifier itself can fail, so use a different channel and/or a fallback",
+    "Reference ERROR_WORKFLOWS.md"
+  ],
+  "expected_content": [
+    "retryOnFail",
+    "maxTries",
+    "Error Trigger",
+    "error workflow",
+    "Workflow Settings",
+    "UI"
+  ],
+  "priority": "high",
+  "notes": "Tests the unattended-workflow path: retryOnFail self-healing PLUS an Error Trigger workflow for genuine failures, and crucially the honest caveat that the error-workflow assignment is UI-only and the community MCP can't set it. Should also surface the recursion trap."
+}

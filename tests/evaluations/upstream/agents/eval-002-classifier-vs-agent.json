@@ -1,0 +1,25 @@
+{
+  "id": "agents-002",
+  "skills": ["n8n-agents"],
+  "query": "Incoming support messages need to go down one of three branches based on what they're about: 'billing', 'technical issue', or 'general question'. My plan was to use an AI Agent with a system prompt that classifies the message, then feed its output into a Switch node that routes to the three branches. Is that the right way to do this in n8n, or is there something cleaner?",
+  "expected_behavior": [
+    "Activate the n8n-agents skill",
+    "Identify Agent + Switch as the anti-pattern for natural-language routing",
+    "Recommend the Text Classifier node (@n8n/n8n-nodes-langchain.textClassifier) instead",
+    "Explain it is ONE node with N output handles (one per category), with downstream branches wired directly into each output",
+    "Stress that every category needs BOTH a name AND a description, and that the model routes against the description (a category with no description routes poorly)",
+    "Recommend setting options.enableAutoFixing: true for robustness on edge inputs",
+    "Note that a chat-model sub-node wires into the classifier via ai_languageModel",
+    "Explain why Agent + Switch is worse: two nodes plus prompt boilerplate, plus brittle parsing of the agent's text output to drive the Switch",
+    "Optionally distinguish this from when an Agent IS right (tools, multi-turn, memory)"
+  ],
+  "expected_content": [
+    "Text Classifier",
+    "textClassifier",
+    "name and description",
+    "one node",
+    "enableAutoFixing"
+  ],
+  "priority": "high",
+  "notes": "Classic over-build: reaching for a full Agent to do route-on-NL when Text Classifier is purpose-built — one node, N outputs, name+description per category. Skill must name the anti-pattern and prescribe the classifier."
+}

@@ -1,0 +1,43 @@
+name: Live n8n skill integration
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+    paths:
+      - 'skills/**'
+      - 'tests/docker/**'
+      - 'scripts/**'
+      - 'docker-compose.integration.yml'
+      - '.gitea/workflows/skill-integration.yml'
+jobs:
+  integration:
+    # Register a Linux runner with this label and Docker CLI/Compose access.
+    # Skills are built into the image; no host workspace bind mounts are needed.
+    runs-on: n8n-skill-ci
+    timeout-minutes: 20
+    env:
+      SKILL_TEST_MODEL: local/configured
+      LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+      LLM_MODEL_ID: ${{ secrets.LLM_MODEL_ID }}
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+    steps:
+      - uses: https://gitea.com/actions/checkout@v4
+      - name: Run OpenCode + MCP + n8n
+        run: sh scripts/test-integration.sh
+      - name: Verify Docker cleanup (also after cancellation)
+        if: always()
+        run: sh scripts/cleanup-integration.sh
+      - name: Print portable report
+        if: always()
+        run: |
+          if [ -f test-results/integration/report.json ]; then
+            cat test-results/integration/report.json
+          fi
+      - name: Save report, workflow and traces
+        if: always()
+        uses: https://gitea.com/actions/upload-artifact@v3
+        with:
+          name: n8n-skill-integration
+          path: test-results/integration/

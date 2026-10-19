@@ -1,0 +1,93 @@
+services:
+  n8n:
+    environment:
+      N8N_RUNNERS_MODE: external
+      N8N_RUNNERS_BROKER_LISTEN_ADDRESS: 0.0.0.0
+      N8N_RUNNERS_AUTH_TOKEN: isolated-ci-runner-token-no-production-data
+  bootstrap:
+    environment:
+      SKILL_TEST_SUITE: "true"
+  task-runners:
+    image: n8nio/runners:2.38.5@sha256:427170bc670beff179e3bf20ddf4c5210a6cbb623f01bb7bc17fbcd425d34067
+    environment:
+      N8N_RUNNERS_TASK_BROKER_URI: http://n8n:5679
+      N8N_RUNNERS_AUTH_TOKEN: isolated-ci-runner-token-no-production-data
+      N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT: "0"
+    depends_on:
+      n8n:
+        condition: service_healthy
+  fixture-api:
+    build:
+      context: .
+      dockerfile: tests/docker/Integration.Dockerfile
+    entrypoint: ["node", "/opt/skill-test/fixture-api.mjs"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  n8n-secondary:
+    extends:
+      file: docker-compose.integration.yml
+      service: n8n
+    environment:
+      N8N_HOST: n8n-secondary
+      WEBHOOK_URL: http://n8n-secondary:5678/
+    volumes: !override
+      - n8n-secondary-data:/home/node/.n8n
+  bootstrap-secondary:
+    extends:
+      file: docker-compose.integration.yml
+      service: bootstrap
+    environment:
+      N8N_TEST_SECONDARY: "true"
+      SKILL_TEST_SUITE: "true"
+    volumes: !override
+      - secondary-secrets:/secrets
+    depends_on: !override
+      n8n-secondary:
+        condition: service_healthy
+  n8n-mcp-secondary:
+    extends:
+      file: docker-compose.integration.yml
+      service: n8n-mcp
+    environment:
+      N8N_API_URL: http://n8n-secondary:5678
+    volumes: !override
+      - secondary-secrets:/secrets:ro
+    depends_on: !override
+      bootstrap-secondary:
+        condition: service_completed_successfully
+  suite-proxy:
+    build:
+      context: .
+      dockerfile: tests/docker/Integration.Dockerfile
+    entrypoint: ["node", "/opt/skill-test/suite-proxy.mjs"]
+    volumes:
+      - test-secrets:/secrets:ro
+      - secondary-secrets:/secrets-secondary:ro
+    depends_on:
+      n8n-mcp:
+        condition: service_healthy
+      n8n-mcp-secondary:
+        condition: service_healthy
+      task-runners:
+        condition: service_started
+      fixture-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  integration:
+    entrypoint: ["node", "/opt/skill-test/suite.mjs"]
+    environment:
+      SKILL_TEST_TIMEOUT_SECONDS: ${SKILL_TEST_TIMEOUT_SECONDS:-600}
+      SKILL_TEST_MAX_ERRORS: ${SKILL_TEST_MAX_ERRORS:-2}
+    volumes:
+      - secondary-secrets:/secrets-secondary:ro
+
+volumes:
+  n8n-secondary-data:
+  secondary-secrets:

@@ -1,0 +1,12 @@
+log:
+  level: info
+runner:
+  file: /runner/.runner
+  capacity: 1
+  timeout: 2h
+  labels:
+    - n8n-skill-ci:host
+cache:
+  enabled: false
+host:
+  workdir_parent: /runner/work

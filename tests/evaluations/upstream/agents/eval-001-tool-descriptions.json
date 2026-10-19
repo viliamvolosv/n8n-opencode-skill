@@ -1,0 +1,24 @@
+{
+  "id": "agents-001",
+  "skills": ["n8n-agents"],
+  "query": "I built an AI Agent in n8n and attached an HTTP Request Tool to it. The agent just never calls it — it answers from its own knowledge instead. The tool node is named 'tool1' and I left the description field blank because the URL is right there in the node. The model and memory are wired correctly. What's going on?",
+  "expected_behavior": [
+    "Activate the n8n-agents skill",
+    "Explain that the agent selects tools ONLY by reading their name and description — it cannot see the node's URL or internal config",
+    "Identify both problems: a generic name ('tool1') and an empty description make the tool effectively invisible to the model",
+    "Note that this fails silently — there is usually no error, the agent just skips the tool or hallucinates",
+    "Recommend a verb-first, specific name (e.g. 'Search customer database', 'Lookup order by ID')",
+    "Recommend a real description: what the tool does, when to use it, and what each $fromAI parameter means",
+    "Frame tool name + description as part of the prompt / API design, not documentation",
+    "Reference TOOLS.md for naming and description patterns"
+  ],
+  "expected_content": [
+    "name",
+    "description",
+    "part of the prompt",
+    "verb-first",
+    "$fromAI"
+  ],
+  "priority": "high",
+  "notes": "The #1 agent mistake: treating tool name/description as cosmetic. The model picks tools purely from name + description + $fromAI param descriptions; a blank description is a non-tool. Skill must reframe these fields as prompt engineering and give the rename + real-description fix."
+}

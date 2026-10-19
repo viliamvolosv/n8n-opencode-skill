@@ -1,0 +1,27 @@
+name: Skill test harness
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+    paths:
+      - 'skills/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'upstream.json'
+      - 'docker-compose*.yml'
+      - '.gitea/workflows/skill-harness.yml'
+jobs:
+  harness:
+    runs-on: n8n-skill-ci
+    timeout-minutes: 15
+    steps:
+      - uses: https://gitea.com/actions/checkout@v4
+      - name: Check execution assertions, catalog and local fixtures without a model
+        run: sh scripts/test-suite.sh --self-test
+      - name: Check cleanup after success, failure and interruption
+        run: sh scripts/test-docker-cleanup.sh
+      - name: Verify Docker cleanup (also after cancellation)
+        if: always()
+        run: sh scripts/cleanup-integration.sh

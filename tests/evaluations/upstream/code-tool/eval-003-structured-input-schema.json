@@ -1,0 +1,22 @@
+{
+  "id": "code-tool-003",
+  "skills": ["n8n-code-tool"],
+  "query": "My AI agent needs to call a leasing calculator tool with three numeric inputs: price, months, and residual_percent. Right now the agent passes them as one comma-separated string and my parsing keeps breaking. What's the right way to define multiple typed inputs for a Code Tool?",
+  "expected_behavior": [
+    "Activate n8n-code-tool skill",
+    "Recommend specifyInputSchema: true so the tool becomes a DynamicStructuredTool with typed arguments",
+    "Show schemaType: 'fromJson' with a jsonSchemaExample (simplest) or schemaType: 'manual' with a full JSON Schema",
+    "Show that query is then a validated object: query.price, query.months, query.residual_percent",
+    "Remind that the return value must still be a string (JSON.stringify the result)",
+    "Mention fromJson requires node version >= 1.3",
+    "Reference INPUT_SCHEMA.md for the complete setup"
+  ],
+  "expected_content": [
+    "specifyInputSchema",
+    "jsonSchemaExample",
+    "query.price",
+    "JSON.stringify"
+  ],
+  "priority": "medium",
+  "notes": "Structured input is the production-grade answer to multi-parameter tools; the skill should steer away from fragile string parsing."
+}

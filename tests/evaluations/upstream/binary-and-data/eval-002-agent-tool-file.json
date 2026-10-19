@@ -1,0 +1,23 @@
+{
+  "id": "binary-and-data-002",
+  "skills": ["n8n-binary-and-data"],
+  "query": "My AI Agent has a chat trigger where users upload an image, and a Custom Code Tool that's supposed to run OCR on it. I set passthroughBinaryImages: true on the agent, but the OCR tool always receives nothing — no file, no image. The agent can clearly see the image when I ask it to describe the picture, so why can't the tool get it?",
+  "expected_behavior": [
+    "Activate n8n-binary-and-data skill",
+    "Explain that the agent-tool boundary is JSON only — tool arguments (filled by $fromAI) cannot carry binary in either direction",
+    "Clarify that passthroughBinaryImages only affects what the LLM sees for vision (image-only), and does NOT feed files to tools — that's why describe-the-image works but the tool gets nothing",
+    "Give the pattern: pre-stage the uploaded file to storage under a key (Split Out files, hash, upload), inject the key(s) into the agent's system prompt with both original name and storage key plus 'use EXACTLY this key', and have the tool fetch by key",
+    "Mention the Merge synchronization barrier before the agent (so uploads finish before the agent runs) and executeOnce: true on the agent (so N files don't cause N agent runs)",
+    "Note that a Custom Code Tool sandbox can't fetch/download — recommend a Call n8n Workflow Tool (sub-workflow) that downloads by key and runs OCR, returning JSON",
+    "Reference AGENT_TOOL_BINARY.md for the full inbound pattern"
+  ],
+  "expected_content": [
+    "JSON only",
+    "passthroughBinaryImages",
+    "storage",
+    "system prompt",
+    "executeOnce"
+  ],
+  "priority": "high",
+  "notes": "The agent-tool binary boundary, inbound direction. Key misconception to correct: passthroughBinaryImages is a vision channel, not a tool channel. Fix is pre-stage-to-storage + inject key + tool fetches by key."
+}

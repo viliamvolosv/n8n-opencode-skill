@@ -1,0 +1,24 @@
+{
+  "id": "subworkflows-003",
+  "skills": ["n8n-subworkflows"],
+  "query": "Our team keeps rebuilding the same little sub-workflows — date parsing, invoice formatting, a 'get customer by id' lookup — because nobody can find the ones that already exist. They have names like 'Helper 2' and 'Untitled workflow'. I tried tagging them but it didn't seem to help the assistant find them. How do we make our reusable sub-workflows actually discoverable so they stop getting rebuilt?",
+  "expected_behavior": [
+    "Activate n8n-subworkflows skill",
+    "Explain that the community MCP can't read or filter by tags (UI-only), so tagging won't help AI-side discovery — the name and description are the only searchable surface",
+    "Recommend the verb-first prefix naming convention: 'Subworkflow: <verb> <object>' for generic, '<Domain>: <verb> <object>' (e.g. 'Customer: get by id') for domain-specific, 'Tool: <description>' for agent tools",
+    "Explain that names like 'Helper 2' and 'Untitled workflow' match no search and should be renamed",
+    "Describe the search-before-build protocol: n8n_list_workflows to scan and filter by name, then n8n_get_workflow to read a candidate's description, inputs/outputs, and body before reusing",
+    "Recommend writing a description that documents input/output shape and carries representative keywords, since the description also feeds matching",
+    "Note that renaming preserves the workflow ID so existing Execute Workflow callers keep working",
+    "Reference NAMING_AND_DISCOVERY.md"
+  ],
+  "expected_content": [
+    "tags",
+    "n8n_list_workflows",
+    "n8n_get_workflow",
+    "Subworkflow:",
+    "description"
+  ],
+  "priority": "high",
+  "notes": "Discovery is naming because the MCP can't filter by tags. Skill must dispel the tag assumption, push verb-first prefixes, and describe the n8n_list_workflows/n8n_get_workflow search-before-build loop plus keyword-rich descriptions. Renaming preserves IDs so callers don't break."
+}

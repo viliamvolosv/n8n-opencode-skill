@@ -1,0 +1,18 @@
+services:
+  runner:
+    image: n8n-skill-actions-runner:local
+    build: .
+    restart: unless-stopped
+    command: [daemon, --config, /config.yaml]
+    working_dir: /runner
+    volumes:
+      - ./runner:/runner
+      - ./config.yaml:/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+  janitor:
+    image: n8n-skill-actions-runner:local
+    restart: unless-stopped
+    entrypoint: [node, /janitor.mjs]
+    volumes:
+      - ./janitor.mjs:/janitor.mjs:ro
+      - /var/run/docker.sock:/var/run/docker.sock

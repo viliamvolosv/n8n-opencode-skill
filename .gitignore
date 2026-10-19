@@ -10,12 +10,12 @@ pip-log.txt
 
 # Environment files with secrets
 .env
-.env.local
-.env.*.local
+.env.*
 *.env
 
 # But keep example files
 !.env.example
+!.env.*.example
 
 # IDE
 .idea/
@@ -42,3 +42,8 @@ build/
 .opencode/bun.lock
 .opencode/package.json
 opencode.json
+
+# Docker skill evaluation artifacts
+test-results/
+# Private Gitea runner registration and workspaces
+tests/ci/runner/

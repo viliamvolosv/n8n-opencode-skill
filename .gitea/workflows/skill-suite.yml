@@ -1,0 +1,72 @@
+name: Full skill suite
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  runtime-contract:
+    runs-on: n8n-skill-ci
+    timeout-minutes: 15
+    steps:
+      - uses: https://gitea.com/actions/checkout@v4
+      - name: Verify assertions against working and broken real n8n workflows without an LLM
+        run: sh scripts/test-suite.sh --verify-runtime
+      - name: Verify Docker cleanup
+        if: always()
+        run: sh scripts/cleanup-integration.sh
+      - name: Save harness control evidence
+        if: always()
+        uses: https://gitea.com/actions/upload-artifact@v3
+        with:
+          name: runtime-contract
+          path: test-results/integration/
+  provider:
+    needs: runtime-contract
+    runs-on: n8n-skill-ci
+    timeout-minutes: 20
+    env:
+      SKILL_TEST_MODEL: local/configured
+      LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+      LLM_MODEL_ID: ${{ secrets.LLM_MODEL_ID }}
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+    steps:
+      - uses: https://gitea.com/actions/checkout@v4
+      - name: Check configured local model before the full suite
+        run: sh scripts/test-provider.sh
+      - name: Verify Docker cleanup
+        if: always()
+        run: sh scripts/cleanup-integration.sh
+      - name: Save provider smoke report and traces
+        if: always()
+        uses: https://gitea.com/actions/upload-artifact@v3
+        with:
+          name: provider-preflight
+          path: test-results/integration/
+  suite:
+    needs: provider
+    runs-on: n8n-skill-ci
+    timeout-minutes: 120
+    env:
+      SKILL_TEST_MAX_ERRORS: 15
+      SKILL_TEST_MODEL: local/configured
+      LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+      LLM_MODEL_ID: ${{ secrets.LLM_MODEL_ID }}
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        group: [agents, binary-and-data, code-javascript, code-python, code-tool, error-handling, expression-syntax, mcp-tools, multi-instance, node-configuration, self-hosting, subworkflows, validation-expert, workflow-patterns, router]
+    steps:
+      - uses: https://gitea.com/actions/checkout@v4
+      - name: Execute task in n8n and assert results
+        run: sh scripts/test-suite.sh --group '${{ matrix.group }}'
+      - name: Verify Docker cleanup (also after cancellation)
+        if: always()
+        run: sh scripts/cleanup-integration.sh
+      - name: Upload evidence and JUnit
+        if: always()
+        uses: https://gitea.com/actions/upload-artifact@v3
+        with:
+          name: skill-suite-${{ matrix.group }}
+          path: test-results/integration/

@@ -1,0 +1,21 @@
+{
+  "id": "code-tool-001",
+  "skills": ["n8n-code-tool"],
+  "query": "My Custom Code Tool attached to an AI Agent keeps failing with 'Wrong output type returned'. My code is: return [{json: {result: total}}]; This exact pattern works fine in my other Code nodes. What's wrong?",
+  "expected_behavior": [
+    "Activate n8n-code-tool skill (not n8n-code-javascript)",
+    "Explain that the Code Tool is a different node (@n8n/n8n-nodes-langchain.toolCode) with a different return contract",
+    "Explain that Code Tools must return a string, not an items array",
+    "Show correct fix: return JSON.stringify({result: total}) or a plain string",
+    "Mention that numbers are auto-converted to strings but objects/arrays throw",
+    "Reference ERROR_PATTERNS.md for the full error catalog"
+  ],
+  "expected_content": [
+    "toolCode",
+    "return a string",
+    "JSON.stringify",
+    "Wrong output type"
+  ],
+  "priority": "high",
+  "notes": "The #1 Code Tool mistake: applying the Code node's [{json:{...}}] return format. The skill must clearly distinguish the two contracts."
+}

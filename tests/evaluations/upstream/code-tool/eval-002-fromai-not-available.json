@@ -1,0 +1,21 @@
+{
+  "id": "code-tool-002",
+  "skills": ["n8n-code-tool"],
+  "query": "I'm building a Code Tool for my AI Agent and using const city = $fromAI('city', 'The city to look up'); but execution fails with \"Cannot assign to read only property 'name' of object 'Error: No execution data available'\". How do I get the AI's input?",
+  "expected_behavior": [
+    "Activate n8n-code-tool skill",
+    "Explain that $fromAI() is not available inside the Code Tool sandbox (it's for parameter fields of other tool nodes)",
+    "Explain that the AI's input arrives in the fixed variable: query (JavaScript) or _query (Python)",
+    "Show how to use query directly for a single string input",
+    "For multiple fields, recommend specifyInputSchema: true so query becomes a validated object",
+    "Reference INPUT_SCHEMA.md for structured input setup"
+  ],
+  "expected_content": [
+    "$fromAI",
+    "not available",
+    "query",
+    "specifyInputSchema"
+  ],
+  "priority": "high",
+  "notes": "Signature error string maps directly to $fromAI misuse in the Code Tool sandbox. Skill must redirect to the query variable."
+}

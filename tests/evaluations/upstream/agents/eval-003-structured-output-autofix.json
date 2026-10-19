@@ -1,0 +1,26 @@
+{
+  "id": "agents-003",
+  "skills": ["n8n-agents"],
+  "query": "My AI Agent is supposed to return JSON that a downstream node parses — {score, category, reason}. I already attached a Structured Output Parser sub-node with a jsonSchemaExample. Most of the time it works, but every so often the agent returns slightly malformed JSON (a trailing comma, or it wraps the whole thing in a ```json code block) and the entire workflow crashes. How do I make this robust?",
+  "expected_behavior": [
+    "Activate the n8n-agents skill",
+    "Explain that without autoFix, a single malformed parse halts the whole workflow",
+    "Tell the user to enable autoFix: true on the outputParserStructured node",
+    "Explain that autoFix wires a SECOND model into the parser's ai_languageModel slot as the fixer, which retries the bad output against the schema",
+    "Stress the fixer must be a coding-capable model (Sonnet-class or better) — a weak fixer just produces another malformed retry",
+    "Recommend switching from jsonSchemaExample (schemaType: fromJson) to a real manual JSON Schema (schemaType: manual) so enums, ranges, and required vs optional are enforced",
+    "Call out the markdown-code-block wrapping specifically: add 'DO NOT wrap the output in a markdown code block' to the retry prompt and/or the main system prompt",
+    "Optionally note the belt-and-suspenders pattern: state the exact JSON shape in the system prompt too",
+    "Reference STRUCTURED_OUTPUT.md"
+  ],
+  "expected_content": [
+    "autoFix",
+    "coding-capable",
+    "fixer",
+    "schemaType",
+    "manual",
+    "markdown code block"
+  ],
+  "priority": "high",
+  "notes": "The two structured-output rules: parse AND autoFix with a capable fixer model, and prefer a manual JSON schema over an example. Must also catch the load-bearing 'DO NOT wrap in markdown' line, which is the usual cause of 'looks like valid JSON but fails to parse'."
+}

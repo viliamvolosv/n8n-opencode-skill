@@ -1,0 +1,22 @@
+{
+  "id": "multi-instance-005",
+  "skills": ["n8n-multi-instance"],
+  "query": "I tried to create an API credential and the tool came back with this error instead of creating it:\n{ \"error\": \"INSTANCE_AMBIGUOUS\", \"message\": \"...the session issuing this request never switched there itself...\", \"lastSelected\": { \"id\": \"inst-staging\", \"name\": \"staging\" }, \"default\": { \"id\": \"inst-prod\", \"name\": \"prod\" } }\nWhat's going on and how do I get the credential created?",
+  "expected_behavior": [
+    "Activate n8n-multi-instance and recognize INSTANCE_AMBIGUOUS as the credential-write fail-close, not a tool bug",
+    "Explain the cause: the credential write was about to land on an instance this session inherited (staging, the lastSelected) but never explicitly switched to, and that instance isn't the account default (prod), so the server blocked the write rather than risk putting the secret on the wrong instance — the write never reached n8n",
+    "State that nothing was created and no quota was charged — the write was refused, not partially applied",
+    "Ask the user (or decide from context) which instance is actually intended — lastSelected (staging) or default (prod)",
+    "Run n8n_instances({mode:\"switch\", name:\"staging\"}) (or the intended target) on THIS session to confirm the target explicitly",
+    "Confirm the switch result (current), then retry n8n_manage_credentials create",
+    "Do NOT work around the error by retrying blindly, switching to the default reflexively, or assuming the credential already exists"
+  ],
+  "expected_content": [
+    "INSTANCE_AMBIGUOUS",
+    "switch",
+    "lastSelected",
+    "n8n_manage_credentials"
+  ],
+  "priority": "high",
+  "notes": "INSTANCE_AMBIGUOUS is emitted by the credential-write path (not the n8n_instances tool) and carries lastSelected + default. Correct recovery = explicit switch on THIS session to confirm the intended instance, then retry. The trap is reflexively retrying or defaulting without confirming intent."
+}

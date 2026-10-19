@@ -1,0 +1,25 @@
+{
+  "id": "subworkflows-001",
+  "skills": ["n8n-subworkflows"],
+  "query": "I built a sub-workflow that looks up a customer by id and I want my AI Agent to call it as a tool. But when I wire it up, the agent has no way to pass the customer id in — there are no parameters to fill. The Execute Workflow Trigger is set to 'Take from previous node' / passthrough. How do I let the agent (and other workflows) actually pass the id into this sub-workflow?",
+  "expected_behavior": [
+    "Activate n8n-subworkflows skill",
+    "Identify the root cause: the Execute Workflow Trigger is on passthrough, which exposes no input schema, so an agent has nothing to fill and structured callers have nothing to bind to",
+    "Explain that the fix is to switch the trigger to 'Define Below' with typed fields, because Define Below is the only mode that gives callers (including $fromAI) a schema to fill",
+    "Show the trigger's workflowInputs.values with a typed field (e.g. { name: 'customer_id', type: 'string' }) and that types should be chosen deliberately",
+    "Explain how to read the input in the body ($json.customer_id or via $('When Executed by Another Workflow'))",
+    "Apply the change via n8n_update_partial_workflow (updateNode or patchNodeField on the trigger node)",
+    "State the two legitimate exceptions to Define Below: binary input (typed fields are JSON-only) and a genuinely zero-input sub-workflow (Define Below needs at least one field) — and note this customer-id case is neither",
+    "Note that n8n won't error on an unrecognized input field, so the contract must be declared explicitly",
+    "Reference n8n-agents for the agent-tool wiring specifics"
+  ],
+  "expected_content": [
+    "Define Below",
+    "passthrough",
+    "workflowInputs",
+    "$fromAI",
+    "n8n_update_partial_workflow"
+  ],
+  "priority": "high",
+  "notes": "Core non-negotiable: a typed Define-Below trigger is what makes a sub-workflow callable by an agent or a structured caller. Passthrough has no fill-able schema. The skill must name the two and only two exceptions (binary, zero-input) and confirm this case is neither."
+}

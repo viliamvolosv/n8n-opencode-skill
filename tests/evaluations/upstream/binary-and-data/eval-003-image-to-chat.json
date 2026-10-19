@@ -1,0 +1,24 @@
+{
+  "id": "binary-and-data-003",
+  "skills": ["n8n-binary-and-data"],
+  "query": "I built a workflow that generates an image with an AI node, and then posts it to our Slack channel. The message shows up but there's no image — just text, or a broken/empty attachment. The binary is definitely on the item coming out of the image node. How do I get the actual image to show in the chat message?",
+  "expected_behavior": [
+    "Activate n8n-binary-and-data skill",
+    "Explain that chat surfaces render images by URL (or via the platform's file-upload API), not from the $binary slot — binary on the item is not enough",
+    "State that n8n has no built-in CDN; the image must be uploaded somewhere that serves a fetchable HTTPS URL first",
+    "Give the generate -> upload -> reply-with-URL flow (upload to storage, capture the URL, embed that URL in the Slack message)",
+    "Ask the user which storage they already use rather than defaulting to S3 (R2, S3, GCS, Azure Blob, Supabase Storage, Dropbox/Drive, etc.), and offer Cloudflare R2 as the lowest-friction option if they have none",
+    "Mention the provider AI node may need options.binaryPropertyOutput set so the bytes actually land in $binary",
+    "Note signed vs public URLs for sensitive content, and that Slack also supports its native file-upload API as an alternative to URL embedding",
+    "Reference CDN_REQUIREMENT.md"
+  ],
+  "expected_content": [
+    "URL",
+    "CDN",
+    "upload",
+    "storage",
+    "which storage"
+  ],
+  "priority": "high",
+  "notes": "The CDN/URL requirement for chat surfaces. Must NOT default to S3 — should ask which storage. Core point: chat clients don't read $binary; they need a served URL or the platform file API."
+}
